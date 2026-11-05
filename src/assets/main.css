@@ -1,0 +1,120 @@
+@import 'tailwindcss';
+@import 'flowbite/src/themes/default';
+@plugin 'flowbite/plugin';
+@source '../../node_modules/flowbite';
+
+/* Dark mode follows a `.dark` class on <html> (set by useTheme), matching Flowbite. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Office tokens. Surfaces, ink and status colors follow the dataviz reference
+ * palette; status colors are never used for anything but state and always
+ * ship with an icon + label.
+ */
+:root {
+  color-scheme: light;
+  --office-page: #f6f5f1;
+  --office-surface: #fcfcfb;
+  --office-surface-2: #f0efec;
+  --office-ink: #0b0b0b;
+  --office-ink-2: #52514e;
+  --office-muted: #898781;
+  --office-hairline: #e1e0d9;
+  --office-ring: rgba(11, 11, 11, 0.1);
+  --office-rail: #111110;
+  --office-rail-ink: #c3c2b7;
+  --office-accent: #f5c518;
+  --office-accent-ink: #0b0b0b;
+  --office-accent-soft: #fdf3c4;
+  --office-series: #2a78d6;
+  --office-series-soft: #cde2fb;
+  --office-good: #0ca30c;
+  --office-good-ink: #006300;
+  --office-warning: #fab219;
+  --office-serious: #ec835a;
+  --office-critical: #d03b3b;
+  --office-idle: #c3c2b7;
+}
+
+.dark {
+  color-scheme: dark;
+  --office-page: #0d0d0d;
+  --office-surface: #1a1a19;
+  --office-surface-2: #252523;
+  --office-ink: #f0efec;
+  --office-ink-2: #c3c2b7;
+  --office-muted: #898781;
+  --office-hairline: #2c2c2a;
+  --office-ring: rgba(255, 255, 255, 0.1);
+  --office-rail: #000000;
+  --office-rail-ink: #898781;
+  --office-accent: #f5c518;
+  --office-accent-ink: #0b0b0b;
+  --office-accent-soft: #3a3214;
+  --office-series: #3987e5;
+  --office-series-soft: #184f95;
+  --office-good-ink: #0ca30c;
+  --office-idle: #52514e;
+}
+
+@theme inline {
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --color-page: var(--office-page);
+  --color-surface: var(--office-surface);
+  --color-surface-2: var(--office-surface-2);
+  --color-ink: var(--office-ink);
+  --color-ink-2: var(--office-ink-2);
+  --color-muted: var(--office-muted);
+  --color-hairline: var(--office-hairline);
+  --color-ring: var(--office-ring);
+  --color-rail: var(--office-rail);
+  --color-rail-ink: var(--office-rail-ink);
+  --color-accent: var(--office-accent);
+  --color-accent-ink: var(--office-accent-ink);
+  --color-accent-soft: var(--office-accent-soft);
+  --color-series: var(--office-series);
+  --color-series-soft: var(--office-series-soft);
+  --color-good: var(--office-good);
+  --color-good-ink: var(--office-good-ink);
+  --color-warning: var(--office-warning);
+  --color-serious: var(--office-serious);
+  --color-critical: var(--office-critical);
+  --color-idle: var(--office-idle);
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--office-page);
+    color: var(--office-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@utility panel {
+  @apply rounded-2xl bg-surface ring-1 ring-ring;
+}
+@utility eyebrow {
+  @apply text-[11px] font-semibold tracking-[0.08em] text-muted uppercase;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-series disabled:cursor-not-allowed disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply btn bg-ink text-surface hover:opacity-85;
+}
+@utility btn-ghost {
+  @apply btn bg-surface-2 text-ink hover:bg-hairline;
+}
+@utility field {
+  @apply rounded-lg border-0 bg-surface-2 px-3 py-1.5 text-sm text-ink ring-1 ring-ring focus:ring-2 focus:ring-series;
+}
+@layer base {
+  select.field {
+    padding-right: 2.25rem;
+  }
+}
+@utility num {
+  font-variant-numeric: tabular-nums;
+}
