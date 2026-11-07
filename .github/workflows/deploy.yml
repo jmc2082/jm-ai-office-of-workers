@@ -1,0 +1,90 @@
+name: Deploy web
+
+# Tests, builds the production site (.env.production) and publishes it to Amplify as a
+# manual deployment. The Amplify app, its domain and the deploy role live in the
+# jm-office-web CloudFormation stack (jm-ai-office-api repo, infra/cloudformation/web.json).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # GitHub OIDC -> AWS role, no stored AWS keys
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-2
+  STACK: jm-office-web
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run type-check
+      - run: npx vitest run
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --project=chromium
+        env:
+          CI: true
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build-only
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Read stack outputs
+        id: stack
+        run: |
+          out() { aws cloudformation describe-stacks --stack-name "$STACK" \
+            --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue" --output text; }
+          {
+            echo "app_id=$(out AppId)"
+            echo "branch=$(out BranchName)"
+            echo "site_url=$(out SiteUrl)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish to Amplify
+        env:
+          APP_ID: ${{ steps.stack.outputs.app_id }}
+          BRANCH: ${{ steps.stack.outputs.branch }}
+        run: |
+          (cd dist && zip -qr ../site.zip .)
+          read -r job url < <(aws amplify create-deployment --app-id "$APP_ID" --branch-name "$BRANCH" \
+            --query '[jobId,zipUploadUrl]' --output text)
+          echo "Amplify job $job"
+          curl -fsS -X PUT -T site.zip "$url"
+          aws amplify start-deployment --app-id "$APP_ID" --branch-name "$BRANCH" --job-id "$job" >/dev/null
+          status=PENDING
+          for _ in $(seq 1 60); do
+            sleep 5
+            status=$(aws amplify get-job --app-id "$APP_ID" --branch-name "$BRANCH" --job-id "$job" \
+              --query job.summary.status --output text)
+            case "$status" in PENDING|PROVISIONING|RUNNING) continue ;; *) break ;; esac
+          done
+          echo "Status: $status"
+          [ "$status" = SUCCEED ]
+
+      - name: Check the site
+        run: curl -fsS --retry 5 --retry-delay 5 -o /dev/null -w "%{http_code} %{url_effective}\n" "${{ steps.stack.outputs.site_url }}/login"
