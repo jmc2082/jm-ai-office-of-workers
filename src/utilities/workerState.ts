@@ -28,6 +28,7 @@ export type IconName =
   | 'bolt'
   | 'arrow-right'
   | 'circle'
+  | 'logout'
 
 export function workerState(w: WorkerSummary): WorkerState {
   if (w.lastRun && (w.lastRun.status === 'running' || w.lastRun.status === 'queued')) return 'working'

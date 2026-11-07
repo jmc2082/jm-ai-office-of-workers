@@ -48,3 +48,4 @@ playwright/.cache/
 .env
 .env.*
 !.env.example
+!.env.production

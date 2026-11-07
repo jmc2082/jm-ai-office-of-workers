@@ -22,6 +22,7 @@ const PATHS: Record<IconName, string[]> = {
   bolt: ['M13 2L4 14h7l-1 8 9-12h-7z'],
   'arrow-right': ['M5 12h14M13 6l6 6-6 6'],
   circle: ['M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16z'],
+  logout: ['M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4', 'M10 16l-4-4 4-4', 'M6 12h10'],
 }
 </script>
 

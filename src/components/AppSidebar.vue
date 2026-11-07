@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import AppIcon from '@/components/AppIcon.vue'
 import { useTheme } from '@/composables/useTheme'
+import { useAuthStore } from '@/stores/auth'
 import { useOfficeStore } from '@/stores/office'
 import type { IconName } from '@/utilities/workerState'
 
 const office = useOfficeStore()
+const auth = useAuthStore()
+const router = useRouter()
 const { choice, cycle } = useTheme()
 
 const links: Array<{ to: string; label: string; icon: IconName; exact?: boolean }> = [
@@ -21,6 +24,11 @@ const themeIcon = computed<IconName>(() =>
   choice.value === 'light' ? 'sun' : choice.value === 'dark' ? 'moon' : 'monitor',
 )
 const needYou = computed(() => office.stats?.needYou ?? 0)
+
+async function signOut() {
+  await auth.signOut()
+  await router.replace({ name: 'login' })
+}
 </script>
 
 <template>
@@ -68,6 +76,17 @@ const needYou = computed(() => office.stats?.needYou ?? 0)
       @click="cycle"
     >
       <AppIcon :name="themeIcon" :size="20" />
+    </button>
+
+    <button
+      v-if="auth.enabled"
+      type="button"
+      class="grid size-11 place-items-center rounded-full text-rail-ink transition hover:bg-white/10 hover:text-white md:size-12"
+      :aria-label="auth.email ? `Sign out ${auth.email}` : 'Sign out'"
+      :title="auth.email ? `Sign out (${auth.email})` : 'Sign out'"
+      @click="signOut"
+    >
+      <AppIcon name="logout" :size="20" />
     </button>
   </nav>
 </template>

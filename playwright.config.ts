@@ -103,7 +103,8 @@ export default defineConfig({
      * Use the preview server on CI for more realistic testing.
      * Playwright will re-use the local server if there is already a dev-server running.
      */
-    command: process.env.CI ? 'npm run preview' : 'npm run dev',
+    // `--mode e2e` skips .env.production, so the build runs without sign-in (the API is mocked).
+    command: process.env.CI ? 'npx vite build --mode e2e && npm run preview' : 'npm run dev',
     port: process.env.CI ? 4173 : 5173,
     reuseExistingServer: !process.env.CI,
   },

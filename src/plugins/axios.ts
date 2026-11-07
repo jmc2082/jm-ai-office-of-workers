@@ -14,4 +14,9 @@ instance.interceptors.request.use(async (config) => {
   return config
 })
 
+instance.interceptors.response.use(undefined, (error) => {
+  if (error?.response?.status === 401) authService.handleUnauthorized()
+  return Promise.reject(error)
+})
+
 export default instance
